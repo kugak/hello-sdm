@@ -6,13 +6,11 @@
     import { quintOut } from "svelte/easing";
     import { page } from '$app/stores';
 
-
-
     const pageId = $page.url.searchParams.get('pid') || 'JPDW7_bTYb';
     const tableId = $page.url.searchParams.get('tid') || 'grid-h5ed1eQGwZ';
     console.log(pageId);
     console.log(tableId);
-    console.log(CODA_KEY);
+    // console.log(CODA_KEY);
     let employees = [];
     let error = null;
     let lastUpdated = null;

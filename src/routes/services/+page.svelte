@@ -9,7 +9,6 @@
     const pageId = $page.url.searchParams.get('pid') || 'JPDW7_bTYb';
     const tableId = $page.url.searchParams.get('tid') || 'grid-vfXh3vEkTg';
 
-    // pageId ??= ;
     console.log(pageId);
     console.log(tableId);
     
