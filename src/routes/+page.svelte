@@ -1,98 +1,78 @@
 <script>
-    import { onMount, beforeUpdate } from 'svelte';
-    import axios from 'axios';
-    import { fade, blur, fly, slide, scale } from "svelte/transition";
-    import { quintOut } from "svelte/easing";
-    import { page } from '$app/stores';
+  import { page } from "$app/stores";
+  import axios from "axios";
+  import { onDestroy, onMount } from "svelte";
 
-    const pageId = $page.url.searchParams.get('pid');
-    const tableId = $page.url.searchParams.get('tid');
-    console.log(pageId);
-    console.log(tableId);
-    let services = [];
-    let error = null;
-    let lastUpdated = null;
+  const pageId = $page.url.searchParams.get("pid") || "JPDW7_bTYb";
+  const tableId = $page.url.searchParams.get("tid") || "grid-vfXh3vEkTg";
+  console.log(pageId);
+  console.log(tableId);
+  let services = [];
+  let error = null;
+  let lastUpdated = null;
+  let currentTime = new Date().toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  let currentDay = null;
 
-
-
-    async function fetchData() {
-        try {
-            const response = await axios.get(`https://coda.io/apis/v1/docs/${pageId}/tables/${tableId}/rows?useColumnNames=true&valueFormat=rich&query=isPlaying:"true"`, {
-                headers: {
-                    'Authorization': 'Bearer c32f30d9-c49f-42cf-b445-ddcb6c950e97'
-                },
-            });
-            services = response.data.items;
-            lastUpdated = new Date().toLocaleTimeString(); // Update last updated timestamp
-            logger.info('Data fetched successfully', { services });
-        } catch (e) {
-            error = e;
-            console.log(e);
-            logger.error('Error fetching data from Coda API', { error: e });
+  async function fetchData() {
+    try {
+      const response = await axios.get(
+        `https://coda.io/apis/v1/docs/${pageId}/tables/${tableId}/rows?useColumnNames=true&valueFormat=rich&query=isPlaying:"true"`,
+        {
+          headers: {
+            Authorization: "Bearer c32f30d9-c49f-42cf-b445-ddcb6c950e97",
+          },
         }
-        console.log(services);
+      );
+      services = response.data.items;
+      lastUpdated = new Date().toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit",
+      }); // Update last updated timestamp
+      currentDay = new Date().getDay(); // Get the current day index (0-6)
+      services = services.filter((service) =>
+        service.values.Weekdays.some((weekday) => weekday.name === currentDay)
+      );
+      console.log("Data fetched successfully", { services });
+    } catch (e) {
+      error = e;
+      console.log(e);
+      console.error("Error fetching data from Coda API", { error: e });
     }
+    console.log(services);
+  }
 
-    onMount(() => {
-        fetchData(); // Fetch data immediately on mount
-    });
+  onMount(() => {
+    fetchData(); // Fetch data immediately on mount
+  });
 
-    // Fetch data every minute
-    let interval;
-    onMount(() => {
-        interval = setInterval(fetchData, 60000);
-    });
+  // Fetch data every minute
+  let interval;
+  onMount(() => {
+    interval = setInterval(fetchData, 60000);
+  });
 
-    // Clear interval on component destruction
-    onMount(() => {
-        return () => {
-            clearInterval(interval);
-        };
-    });
+  // Clear interval on component destruction
+  onDestroy(() => {
+    clearInterval(interval);
+  });
 </script>
-<style>
-    .container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 20px;
-    }
-    
-    .service-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    img {
-        height: 300px;
-    }
-</style>
 
 <div>
-    <p>Last Updated: {lastUpdated || 'Not available'}</p>
-    {#if services.length > 0}
-        <!-- Display the fetched data -->
-        <div class="container">
-            {#each services as service}
-            <div class="service-item" transition:fade={{ duration: 300, easing: quintOut }}>
-                <img src="{service.values.Image[0].url}" alt="">
-                <p>Name: {(service.values.Name).slice(3,-3)}</p>
-                <p>Active: {(service.values.Active)}</p>
-                <p>
-                    Days:
-                    {#each service.values.Weekdays as weekday}
-                        {weekday.name}{" "}
-                    {/each}
-                </p>
-            </div>            {/each}
-        </div>
-    {:else if error !== null}
-        <!-- Display error message -->
-        <p>Error fetching data: {error.message}</p>
-    {:else}
-        <!-- Display loading message or spinner -->
-        <p>Loading...</p>
-    {/if}
+  <div class="container">
+    <h1>Enter the url /services or /employees</h1>
+  </div>
 </div>
+
+<style>
+  :global(body) {
+    background-color: #1b4655;
+    height: 100%;
+    margin: 0;
+    color: #fff;
+    font-family: "GT Eesti Pro Display";
+    font-weight: 100;
+  }
+</style>
