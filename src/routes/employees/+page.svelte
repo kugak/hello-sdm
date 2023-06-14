@@ -36,8 +36,9 @@
       // logger.info('Data fetched successfully', { employees });
 
       pharmacyOwner = employees.filter(
-        (employees) =>
-          employees.values.Classification === "```Pharmacy Owner```"
+        (employee) =>
+          employee.values &&
+          employee.values.Classification === "```Pharmacy Owner```"
       );
       pharmacyOwner = pharmacyOwner[0].values;
       pharmacyOwnerProfile = pharmacyOwner.Image[0].url;
@@ -45,14 +46,19 @@
       pharmacyOwnerTitle = pharmacyOwner.Title.slice(3, -3);
 
       pharmacistsList = employees.filter(
-        (employees) => employees.values.Classification === "```Pharmacist```"
+        (employee) =>
+          employee.values &&
+          employee.values.Classification === "```Pharmacist```"
       );
+
       pharmacyTeam = employees.filter(
-        (employees) => employees.values.Classification === "```Pharmacy Team```"
+        (employee) =>
+          employee.values &&
+          employee.values.Classification === "```Pharmacy Team```"
       );
     } catch (e) {
-      error = e;
-      console.log(e);
+      // error = e;
+      // console.log(e);
       // logger.error('Error fetching data from Coda API', { error: e });
     }
     //console.log(pharmacyOwner.Name.slice(3,-3));
@@ -117,7 +123,7 @@
             {/each}
           {:else if error !== null}
             <!-- Display error message -->
-            <p>Error fetching data: {error.message}</p>
+            <p>-</p>
           {:else}
             <!-- Display loading message or spinner -->
             <p>...</p>
@@ -139,7 +145,7 @@
           {/each}
         {:else if error !== null}
           <!-- Display error message -->
-          <p>Error fetching data: {error.message}</p>
+          <p>-</p>
         {:else}
           <!-- Display loading message or spinner -->
           <p>...</p>
