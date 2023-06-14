@@ -50,13 +50,8 @@
       lastUpdated = new Date().toLocaleTimeString([], {
         hour: "numeric",
         minute: "2-digit",
-      }); // Update last updated timestamp
-      // const currentDayIndex = new Date().getDay(); // Get the current day index (0-6)
-      // const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      // currentDay = weekdays[currentDayIndex]; // Get the current day as a string
-      // services = services.filter(service =>
-      //   service.values.Weekdays.some(weekday => weekday.name === currentDay)
-      // );
+      });
+
       console.log("Data fetched successfully", { services });
     } catch (e) {
       error = e;
