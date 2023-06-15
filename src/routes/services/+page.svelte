@@ -12,7 +12,6 @@
 
   let services = [];
   let error = null;
-  let lastUpdated = null;
   let currentTime = new Date().toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
@@ -47,16 +46,17 @@
         }
       );
       services = response.data.items;
-      lastUpdated = new Date().toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      });
+      localStorage.setItem("services", JSON.stringify(services)); // Store services data in local storage
 
       console.log("Data fetched successfully", { services });
     } catch (e) {
       error = e;
       console.log(e);
       console.error("Error fetching data from Coda API", { error: e });
+      const storedServices = localStorage.getItem("services");
+      if (storedServices) {
+        services = JSON.parse(storedServices); // Use stored services data
+      }
     }
     console.log(services);
     showContent = true; // Set flag to show the content
@@ -116,7 +116,7 @@
 
   <!-- Time -->
   <div class="service__date" in:blur out:fade>
-    <div id="time">
+    <div id="time" in:blur out:fade>
       <span in:blur out:fade>{time}</span>
       <span class="ampm" in:fade out:fade>{amPm}</span>
     </div>
@@ -140,6 +140,7 @@
     margin: 0;
     color: #fff;
     font-family: "GT Eesti Pro Display";
+    overflow: hidden;
   }
 
   .pharmacy {
