@@ -33,35 +33,49 @@
         }
       );
       employees = response.data.items;
+      localStorage.setItem("employees", JSON.stringify(employees)); // Store services data in local storage
+
       // logger.info('Data fetched successfully', { employees });
-
-      pharmacyOwner = employees.filter(
-        (employee) =>
-          employee.values &&
-          employee.values.Classification === "```Pharmacy Owner```"
-      );
-      pharmacyOwner = pharmacyOwner[0].values;
-      pharmacyOwnerProfile = pharmacyOwner.Image[0].url;
-      pharmacyOwnerName = pharmacyOwner.Name.slice(3, -3);
-      pharmacyOwnerTitle = pharmacyOwner.Title.slice(3, -3);
-
-      pharmacistsList = employees.filter(
-        (employee) =>
-          employee.values &&
-          employee.values.Classification === "```Pharmacist```"
-      );
-
-      pharmacyTeam = employees.filter(
-        (employee) =>
-          employee.values &&
-          employee.values.Classification === "```Pharmacy Team```"
-      );
     } catch (e) {
       // error = e;
       // console.log(e);
       // logger.error('Error fetching data from Coda API', { error: e });
+      const storedEmployees = localStorage.getItem("employees");
+      if (storedEmployees) {
+        employees = JSON.parse(storedEmployees); // Use stored employees data
+      }
     }
-    //console.log(pharmacyOwner.Name.slice(3,-3));
+    // console.log(pharmacyOwner.Name.slice(3,-3));
+    pharmacyOwner = employees.filter(
+      (employee) =>
+        employee.values &&
+        employee.values.Classification === "```Pharmacy Owner```"
+    );
+    pharmacyOwner = pharmacyOwner[0].values;
+    pharmacyOwnerProfile = pharmacyOwner.Image[0].url;
+    pharmacyOwnerName = pharmacyOwner.Name.slice(3, -3);
+    pharmacyOwnerTitle = pharmacyOwner.Title.slice(3, -3);
+
+    pharmacistsList = employees
+      .filter(
+        (employee) =>
+          employee.values &&
+          employee.values.Classification === "```Pharmacist```"
+      )
+      .sort((a, b) => a.index - b.index);
+
+    pharmacyTeam = employees
+      .filter(
+        (employee) =>
+          employee.values &&
+          employee.values.Classification === "```Pharmacy Team```"
+      )
+      .sort((a, b) => a.index - b.index);
+    console.log("Pharmacy Owner:");
+    console.log(pharmacyOwner);
+    console.log("Pharmacists:");
+    console.log(pharmacistsList);
+    console.log("Pharmacy Team:");
     console.log(pharmacyTeam);
   }
 
@@ -115,7 +129,7 @@
               <div class="list__item" in:blur out:fade>
                 {pharmacist.values.Name.slice(3, -3)}
                 {#if pharmacist.values.Title}
-                  <span class="credentials">
+                  <br /><span class="credentials">
                     {pharmacist.values.Title.slice(3, -3)}
                   </span>
                 {/if}
@@ -179,6 +193,7 @@
     color: #fff;
     font-family: "GT Eesti Pro Display";
     font-weight: 100;
+    overflow: hidden;
   }
 
   .pharmacy {
@@ -201,6 +216,11 @@
     -webkit-box-align: center;
     -ms-flex-align: center;
     align-items: center;
+    min-height: 390px;
+  }
+
+  .ph__profile {
+    min-width: 385px;
   }
 
   .ph__profile img {
@@ -238,9 +258,9 @@
   }
 
   .list__item {
-    flex: 0 0 calc(48% - 10px);
-    padding: 5px 10px;
-    font-size: 2rem;
+    flex: 1 0 calc(45%);
+    padding: 5px 20px 15px 0px;
+    font-size: 2.7rem;
   }
 
   .pharmacist__list,
@@ -267,6 +287,7 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    min-height: 450px;
   }
 
   .list__title {
@@ -276,7 +297,7 @@
   .list__container {
     display: flex;
     gap: 20px;
-    justify-content: space-around;
+    justify-content: space-between;
   }
 
   .list__column {
@@ -299,14 +320,14 @@
   .team__container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-around;
+    justify-content: space-between;
     gap: 10px;
   }
 
   .team__member {
-    flex: 0 0 calc(29.33% - 10px);
-    padding: 5px 10px;
-    font-size: 2rem;
+    flex: 0 0 calc(29.33%);
+    padding: 5px 0px;
+    font-size: 2.7rem;
   }
 
   .pharmacist__team {
