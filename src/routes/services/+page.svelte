@@ -1,14 +1,35 @@
 <script>
   import { page } from "$app/stores";
   import { PUBLIC_CODA_KEY } from "$env/static/public";
+  import { PUBLIC_DD_API_KEY } from "$env/static/public";
   import axios from "axios";
   import { afterUpdate, onDestroy, onMount } from "svelte";
   import { blur, fade } from "svelte/transition";
+  
+  //Logger
+  // const winston = require('winston');
+  // const DatadogWinston = require('datadog-winston');
+
+  // Create a Winston logger
+// const logger = winston.createLogger({
+//   level: 'info',
+//   transports: [
+//     new winston.transports.Console(),
+//     new DatadogWinston({
+//       apiKey: PUBLIC_DD_API_KEY,
+//       hostname: location.hostname,
+//       service: 'SDM',
+//     }),
+//   ],
+// });
+
   // Images
   import pharmaPlus from "../../images/pharma-plus.png";
 
   const pageId = $page.url.searchParams.get("pid") || "JPDW7_bTYb";
   const tableId = $page.url.searchParams.get("tid") || "grid-vfXh3vEkTg";
+  console.log(pageId);
+  console.log(tableId);
 
   let services = [];
   let error = null;
@@ -22,8 +43,8 @@
   let amPm = timeParts[1]; // Extract the AM/PM designation
   let showContent = false; // Flag to show/hide content
 
-  console.log(time); // Output: "9:42"
-  console.log(amPm); // Output: "AM"
+  // console.log(time); // Output: "9:42"
+  // console.log(amPm); // Output: "AM"
 
   function updateTime() {
     currentTime = new Date().toLocaleTimeString([], {
@@ -45,20 +66,56 @@
           },
         }
       );
-      services = response.data.items;
+      services = response.data.items.sort((a, b) => a.index - b.index);;
       localStorage.setItem("services", JSON.stringify(services)); // Store services data in local storage
 
-      console.log("Data fetched successfully", { services });
+      // console.log("Data fetched successfully", { services });
     } catch (e) {
       error = e;
-      console.log(e);
-      console.error("Error fetching data from Coda API", { error: e });
+    console.log(e);
+    console.error("Error fetching data from Coda API", { error: e });
+
+    const logPayload = {
+      title: "Error fetching data from Coda API",
+      text: error.message,
+      aggregationKey: "",
+      eventType: "error",
+      deviceName: "",
+      host: "",
+      priority: "normal",
+      source: `${pageId}-${tableId}`,
+      tags: [
+        `environment:prod`,
+        "app:SDM FOP",
+        "service:Custom",
+        `version:${pageId}`,
+        "event:fetchData",
+        `tag:'servicesPage-'${pageId}-${tableId}`,
+      ],
+    };
+    // console.log(logPayload);
+    // console.log(PUBLIC_DD_API_KEY);
+
+    // logger.error('Error fetching data from Coda API', { error, logPayload });
+
+
+    try {
+      await axios.post("https://api.datadoghq.com/api/v1/events", logPayload, {
+        headers: {
+          "DD-API-KEY": `${PUBLIC_DD_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (logError) {
+      console.error("Failed to send error log to Datadog:", logError);
+    }
+
       const storedServices = localStorage.getItem("services");
       if (storedServices) {
         services = JSON.parse(storedServices); // Use stored services data
       }
     }
-    console.log(services);
+    // console.log(services);
     showContent = true; // Set flag to show the content
   }
 
@@ -99,11 +156,11 @@
           {/each}
         {:else if error !== null}
           <!-- Display error message -->
-          <p>Error fetching data: {error.message}</p>
+          <!-- <p>Error fetching data: {error.message}</p> -->
         {:else}
           <!-- Display loading message or spinner -->
           {#if !showContent}
-            <p />
+              <p><p/>
           {/if}
         {/if}
       </div>
