@@ -1,6 +1,7 @@
 <script>
   import { page } from "$app/stores";
   import { PUBLIC_CODA_KEY } from "$env/static/public";
+  import { PUBLIC_DD_API_KEY } from "$env/static/public";
   import axios from "axios";
   import { onMount } from "svelte";
   import { blur, fade } from "svelte/transition";
@@ -37,9 +38,40 @@
 
       // logger.info('Data fetched successfully', { employees });
     } catch (e) {
-      // error = e;
-      // console.log(e);
-      // logger.error('Error fetching data from Coda API', { error: e });
+      error = e;
+      console.log(e);
+      logger.error('Error fetching data from Coda API', { error: e });
+
+      const logPayload = {
+      title: "Error fetching data from Coda API",
+      text: error.message,
+      aggregationKey: "",
+      eventType: "error",
+      deviceName: "",
+      host: "",
+      priority: "normal",
+      source: `${pageId}-${tableId}`,
+      tags: [
+        `environment:prod`,
+        "app:SDM FOP",
+        "service:Custom",
+        `version:${pageId}`,
+        "event:fetchData",
+        `tag:'servicesPage-'${pageId}-${tableId}`,
+      ],
+    };
+
+    try {
+      await axios.post("https://api.datadoghq.com/api/v1/events", logPayload, {
+        headers: {
+          "DD-API-KEY": `${PUBLIC_DD_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      });
+    } catch (logError) {
+      console.error("Failed to send error log to Datadog:", logError);
+    }
+
       const storedEmployees = localStorage.getItem("employees");
       if (storedEmployees) {
         employees = JSON.parse(storedEmployees); // Use stored employees data
@@ -71,12 +103,12 @@
           employee.values.Classification === "```Pharmacy Team```"
       )
       .sort((a, b) => a.index - b.index);
-    console.log("Pharmacy Owner:");
-    console.log(pharmacyOwner);
-    console.log("Pharmacists:");
-    console.log(pharmacistsList);
-    console.log("Pharmacy Team:");
-    console.log(pharmacyTeam);
+    // console.log("Pharmacy Owner:");
+    // console.log(pharmacyOwner);
+    // console.log("Pharmacists:");
+    // console.log(pharmacistsList);
+    // console.log("Pharmacy Team:");
+    // console.log(pharmacyTeam);
   }
 
   onMount(() => {
